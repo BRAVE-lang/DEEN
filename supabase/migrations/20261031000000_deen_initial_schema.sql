@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+DROP TRIGGER IF EXISTS set_profiles_updated_at ON public.profiles;
 CREATE TRIGGER set_profiles_updated_at
 BEFORE UPDATE ON public.profiles
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS public.user_preferences (
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+DROP TRIGGER IF EXISTS set_user_preferences_updated_at ON public.user_preferences;
 CREATE TRIGGER set_user_preferences_updated_at
 BEFORE UPDATE ON public.user_preferences
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -78,6 +80,7 @@ CREATE TABLE IF NOT EXISTS public.prayer_settings (
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+DROP TRIGGER IF EXISTS set_prayer_settings_updated_at ON public.prayer_settings;
 CREATE TRIGGER set_prayer_settings_updated_at
 BEFORE UPDATE ON public.prayer_settings
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -114,6 +117,7 @@ CREATE TABLE IF NOT EXISTS public.qaza_records (
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+DROP TRIGGER IF EXISTS set_qaza_records_updated_at ON public.qaza_records;
 CREATE TRIGGER set_qaza_records_updated_at
 BEFORE UPDATE ON public.qaza_records
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -254,6 +258,7 @@ CREATE TABLE IF NOT EXISTS public.deen_daily_records (
     CONSTRAINT unique_user_daily_record UNIQUE (user_id, record_date)
 );
 
+DROP TRIGGER IF EXISTS set_deen_daily_records_updated_at ON public.deen_daily_records;
 CREATE TRIGGER set_deen_daily_records_updated_at
 BEFORE UPDATE ON public.deen_daily_records
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -291,6 +296,7 @@ CREATE TABLE IF NOT EXISTS public.user_notes (
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+DROP TRIGGER IF EXISTS set_user_notes_updated_at ON public.user_notes;
 CREATE TRIGGER set_user_notes_updated_at
 BEFORE UPDATE ON public.user_notes
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -364,28 +370,68 @@ ALTER TABLE public.content_licences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.content_verification_logs ENABLE ROW LEVEL SECURITY;
 
 -- User-Isolation Policies: Only the owner can view and modify their own data
+DROP POLICY IF EXISTS "Users can view and edit own profile" ON public.profiles;
 CREATE POLICY "Users can view and edit own profile" ON public.profiles FOR ALL USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can manage own preferences" ON public.user_preferences;
 CREATE POLICY "Users can manage own preferences" ON public.user_preferences FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own prayer settings" ON public.prayer_settings;
 CREATE POLICY "Users can manage own prayer settings" ON public.prayer_settings FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own prayer history" ON public.prayer_history;
 CREATE POLICY "Users can manage own prayer history" ON public.prayer_history FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own qaza records" ON public.qaza_records;
 CREATE POLICY "Users can manage own qaza records" ON public.qaza_records FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own quran bookmarks" ON public.quran_bookmarks;
 CREATE POLICY "Users can manage own quran bookmarks" ON public.quran_bookmarks FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own quran history" ON public.quran_reading_history;
 CREATE POLICY "Users can manage own quran history" ON public.quran_reading_history FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own quran goals" ON public.quran_goals;
 CREATE POLICY "Users can manage own quran goals" ON public.quran_goals FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own custom dhikr" ON public.custom_dhikr;
 CREATE POLICY "Users can manage own custom dhikr" ON public.custom_dhikr FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own tasbeeh sessions" ON public.tasbeeh_sessions;
 CREATE POLICY "Users can manage own tasbeeh sessions" ON public.tasbeeh_sessions FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own dua bookmarks" ON public.dua_bookmarks;
 CREATE POLICY "Users can manage own dua bookmarks" ON public.dua_bookmarks FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own hadith bookmarks" ON public.hadith_bookmarks;
 CREATE POLICY "Users can manage own hadith bookmarks" ON public.hadith_bookmarks FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own favourite names" ON public.favourite_names;
 CREATE POLICY "Users can manage own favourite names" ON public.favourite_names FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own fasting records" ON public.fasting_records;
 CREATE POLICY "Users can manage own fasting records" ON public.fasting_records FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own daily deen records" ON public.deen_daily_records;
 CREATE POLICY "Users can manage own daily deen records" ON public.deen_daily_records FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own personal goals" ON public.personal_goals;
 CREATE POLICY "Users can manage own personal goals" ON public.personal_goals FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own reminders" ON public.reminders;
 CREATE POLICY "Users can manage own reminders" ON public.reminders FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own notes" ON public.user_notes;
 CREATE POLICY "Users can manage own notes" ON public.user_notes FOR ALL USING (auth.uid() = user_id);
 
 -- Public Read Policies for Content Sources, Licences and Verification
+DROP POLICY IF EXISTS "Anyone can read content sources" ON public.content_sources;
 CREATE POLICY "Anyone can read content sources" ON public.content_sources FOR SELECT TO authenticated, anon USING (true);
+
+DROP POLICY IF EXISTS "Anyone can read content licences" ON public.content_licences;
 CREATE POLICY "Anyone can read content licences" ON public.content_licences FOR SELECT TO authenticated, anon USING (true);
+
+DROP POLICY IF EXISTS "Anyone can read content verification logs" ON public.content_verification_logs;
 CREATE POLICY "Anyone can read content verification logs" ON public.content_verification_logs FOR SELECT TO authenticated, anon USING (true);
 
 -- ==============================================================================
@@ -447,3 +493,4 @@ VALUES
     ('Hadith', 'sahih-collections', 'sha256-sunnah-bukhari-muslim', 10000, 'verified', 'Sunnah.com & Darussalam', 'Authentic Arabic text, Darussalam English, in-book numbering, scholar grading'),
     ('HisnAlMuslim', 'hisn-complete', 'sha256-qahtani-hisn-v1', 132, 'verified', 'Darussalam / Ibn Wahf al-Qahtani', 'Categorized authentic supplications with Arabic, Transliteration, Translations')
 ON CONFLICT DO NOTHING;
+
