@@ -43,3 +43,4 @@ sw.js.map
 workbox-*.js
 workbox-*.js.map
 node_modules
+supabase/.temp/ 
