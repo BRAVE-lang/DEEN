@@ -345,8 +345,8 @@ export const Home: React.FC = () => {
       </div>
 
       {/* Daily Worship Check-In (Deen Tracker) */}
-      <div className="bg-white dark:bg-deen-charcoal-card rounded-2xl p-4 shadow-sm border border-emerald-900/10 dark:border-emerald-800/20">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-white dark:bg-deen-charcoal-card rounded-2xl p-4 shadow-sm border border-emerald-900/10 dark:border-emerald-800/20 space-y-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-deen-emerald" />
             <h3 className="text-sm font-bold text-deen-forest dark:text-deen-ivory">
@@ -358,8 +358,43 @@ export const Home: React.FC = () => {
           </Link>
         </div>
 
+        {/* 4 Pillars Daily Metric Strip */}
         {todayLog && (
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 gap-2 text-center pt-1">
+            <Link
+              to="/salah"
+              className="p-2 rounded-xl bg-emerald-50 dark:bg-deen-charcoal border border-emerald-900/10 dark:border-emerald-800/20"
+            >
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 block font-medium">Prayers</span>
+              <span className="text-xs font-bold text-deen-emerald">
+                {Object.values(todayLog.prayers).filter(Boolean).length} / 5
+              </span>
+            </Link>
+
+            <Link
+              to="/quran"
+              className="p-2 rounded-xl bg-emerald-50 dark:bg-deen-charcoal border border-emerald-900/10 dark:border-emerald-800/20"
+            >
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 block font-medium">Quran</span>
+              <span className="text-xs font-bold text-deen-emerald">
+                {todayLog.quranPages || 0} pages
+              </span>
+            </Link>
+
+            <Link
+              to="/calendar"
+              className="p-2 rounded-xl bg-emerald-50 dark:bg-deen-charcoal border border-emerald-900/10 dark:border-emerald-800/20"
+            >
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 block font-medium">Fasting</span>
+              <span className={`text-xs font-bold ${todayLog.fasted ? 'text-amber-500' : 'text-stone-400'}`}>
+                {todayLog.fasted ? 'Fasting' : 'None'}
+              </span>
+            </Link>
+          </div>
+        )}
+
+        {todayLog && (
+          <div className="grid grid-cols-5 gap-2 pt-1 border-t border-stone-100 dark:border-stone-800/60">
             {(['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const).map((pKey) => {
               const isChecked = todayLog.prayers[pKey];
               return (

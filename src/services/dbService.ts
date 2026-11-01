@@ -3,7 +3,7 @@
 // ==============================================================================
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { DailyDeenLog, QazaRecord, Bookmark, TasbeehSession } from '@/types';
+import { DailyDeenLog, QazaRecord, Bookmark, TasbeehSession, FastingRecord, QuranGoal, PrayerHistoryEntry } from '@/types';
 
 interface DeenDBSchema extends DBSchema {
   quran_surahs: {
@@ -78,10 +78,23 @@ interface DeenDBSchema extends DBSchema {
       savedAt: number;
     };
   };
+  fasting_records: {
+    key: string; // date 'YYYY-MM-DD'
+    value: FastingRecord;
+  };
+  quran_goals: {
+    key: string; // 'current'
+    value: QuranGoal;
+  };
+  prayer_history: {
+    key: string; // 'date:prayer'
+    value: PrayerHistoryEntry;
+    indexes: { 'by-date': string };
+  };
 }
 
 const DB_NAME = 'deen_app_offline_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<DeenDBSchema>> | null = null;
 
@@ -121,6 +134,16 @@ export function getDeenDB(): Promise<IDBPDatabase<DeenDBSchema>> {
         }
         if (!db.objectStoreNames.contains('favorites')) {
           db.createObjectStore('favorites', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('fasting_records')) {
+          db.createObjectStore('fasting_records', { keyPath: 'date' });
+        }
+        if (!db.objectStoreNames.contains('quran_goals')) {
+          db.createObjectStore('quran_goals', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('prayer_history')) {
+          const phStore = db.createObjectStore('prayer_history', { keyPath: 'id' });
+          phStore.createIndex('by-date', 'date');
         }
       },
     });
@@ -255,3 +278,96 @@ export async function getFavoritesByType(type: 'dua' | 'hadith' | 'name'): Promi
   const all = await db.getAll('favorites');
   return all.filter(f => f.type === type).map(f => f.data);
 }
+
+// --- Fasting Records Helper ---
+export async function saveFastingRecord(record: FastingRecord): Promise<void> {
+  const db = await getDeenDB();
+  await db.put('fasting_records', record);
+}
+
+export async function getFastingRecords(): Promise<FastingRecord[]> {
+  const db = await getDeenDB();
+  const all = await db.getAll('fasting_records');
+  return all.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export async function deleteFastingRecord(date: string): Promise<void> {
+  const db = await getDeenDB();
+  await db.delete('fasting_records', date);
+}
+
+// --- Quran Goal & Reading Progress Helper ---
+export async function getQuranGoal(): Promise<QuranGoal> {
+  const db = await getDeenDB();
+  const goal = await db.get('quran_goals', 'current');
+  if (goal) return goal;
+  const defaultGoal: QuranGoal = {
+    id: 'current',
+    targetPagesDaily: 4,
+    totalTargetPages: 604,
+    completedPagesTotal: 0,
+    startDate: new Date().toISOString().split('T')[0]
+  };
+  await db.put('quran_goals', defaultGoal);
+  return defaultGoal;
+}
+
+export async function saveQuranGoal(goal: Partial<QuranGoal>): Promise<QuranGoal> {
+  const db = await getDeenDB();
+  const current = await getQuranGoal();
+  const updated: QuranGoal = { ...current, ...goal, id: 'current' };
+  await db.put('quran_goals', updated);
+  return updated;
+}
+
+export async function recordQuranPagesRead(pagesCount: number): Promise<void> {
+  const db = await getDeenDB();
+  const todayStr = new Date().toISOString().split('T')[0];
+  
+  // 1. Update daily deen log
+  const todayLog = await getDailyDeenLog(todayStr);
+  todayLog.quranPages = Math.max(0, (todayLog.quranPages || 0) + pagesCount);
+  await saveDailyDeenLog(todayLog);
+
+  // 2. Update Quran overall goal progress
+  const goal = await getQuranGoal();
+  goal.completedPagesTotal = Math.min(604, Math.max(0, goal.completedPagesTotal + pagesCount));
+  await db.put('quran_goals', goal);
+}
+
+export async function getQuranReadingStats(): Promise<{
+  completedPagesTotal: number;
+  percentageCompleted: number;
+  targetPagesDaily: number;
+  todayPagesRead: number;
+  lastRead?: { surahNumber: number; ayahNumber: number; surahName: string; timestamp: number };
+}> {
+  const goal = await getQuranGoal();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayLog = await getDailyDeenLog(todayStr);
+  const lastRead = await getLastRead();
+
+  const percentage = Math.min(100, Math.round((goal.completedPagesTotal / 604) * 100));
+
+  return {
+    completedPagesTotal: goal.completedPagesTotal,
+    percentageCompleted: percentage,
+    targetPagesDaily: goal.targetPagesDaily || 4,
+    todayPagesRead: todayLog.quranPages || 0,
+    lastRead
+  };
+}
+
+// --- Prayer History Helper ---
+export async function savePrayerRecord(entry: PrayerHistoryEntry): Promise<void> {
+  const db = await getDeenDB();
+  const id = `${entry.date}:${entry.prayerName}`;
+  await db.put('prayer_history', { ...entry, id });
+}
+
+export async function getPrayerHistory(days: number = 30): Promise<PrayerHistoryEntry[]> {
+  const db = await getDeenDB();
+  const all = await db.getAll('prayer_history');
+  return all.sort((a, b) => b.date.localeCompare(a.date));
+}
+

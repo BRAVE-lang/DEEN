@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAudio } from '@/context/AudioContext';
+import { useAuth } from '@/context/AuthContext';
+import { syncUserData } from '@/services/syncService';
 import {
   getAllSurahs,
   getSurahVerses,
@@ -35,6 +37,7 @@ export const SurahView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const surahId = parseInt(id || '1', 10);
   const { language } = useLanguage();
+  const { user } = useAuth();
   const {
     isPlaying,
     currentVerseKey,
@@ -111,6 +114,11 @@ export const SurahView: React.FC = () => {
         translation_text: cleanTranslationText(primaryTrans?.text || '')
       });
       setBookmarkedKeys(prev => new Set(prev).add(verse.verse_key));
+      await saveLastRead(surahId, verse.verse_number, surahMeta?.name_simple || `Surah ${surahId}`);
+    }
+
+    if (user.id) {
+      syncUserData(user.id);
     }
   };
 
@@ -268,6 +276,7 @@ export const SurahView: React.FC = () => {
                           pauseAudio();
                         } else {
                           playAyah(verse.verse_key, `Surah ${surahMeta?.name_simple} (${verse.verse_key})`);
+                          saveLastRead(surahId, verse.verse_number, surahMeta?.name_simple || `Surah ${surahId}`);
                         }
                       }}
                       className={`p-1.5 rounded-lg transition-colors ${

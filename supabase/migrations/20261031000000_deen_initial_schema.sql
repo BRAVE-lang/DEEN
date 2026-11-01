@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS public.prayer_history (
     CONSTRAINT unique_user_date_prayer UNIQUE (user_id, date, prayer_name)
 );
 
-CREATE INDEX idx_prayer_history_user_date ON public.prayer_history(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_prayer_history_user_date ON public.prayer_history(user_id, date);
 
 CREATE TABLE IF NOT EXISTS public.qaza_records (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS public.quran_bookmarks (
     CONSTRAINT unique_user_verse_bookmark UNIQUE (user_id, verse_key)
 );
 
-CREATE INDEX idx_quran_bookmarks_user ON public.quran_bookmarks(user_id);
+CREATE INDEX IF NOT EXISTS idx_quran_bookmarks_user ON public.quran_bookmarks(user_id);
 
 CREATE TABLE IF NOT EXISTS public.quran_reading_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS public.quran_reading_history (
     read_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_quran_reading_history_user ON public.quran_reading_history(user_id, read_at DESC);
+CREATE INDEX IF NOT EXISTS idx_quran_reading_history_user ON public.quran_reading_history(user_id, read_at DESC);
 
 CREATE TABLE IF NOT EXISTS public.quran_goals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS public.tasbeeh_sessions (
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_tasbeeh_sessions_user_date ON public.tasbeeh_sessions(user_id, session_date);
+CREATE INDEX IF NOT EXISTS idx_tasbeeh_sessions_user_date ON public.tasbeeh_sessions(user_id, session_date);
 
 -- ==============================================================================
 -- 7. DUA & HADITH BOOKMARKS & 99 NAMES

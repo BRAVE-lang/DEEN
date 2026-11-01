@@ -316,3 +316,30 @@ export interface DailyDeenLog {
   };
   journalReflection?: string;
 }
+
+export interface FastingRecord {
+  id?: string;
+  date: string;
+  fastType: 'ramadan' | 'sunnah_monday_thursday' | 'white_days' | 'ashura' | 'arafah' | 'qaza' | 'voluntary';
+  completed: boolean;
+  notes?: string;
+}
+
+export interface QuranGoal {
+  id: string;
+  targetPagesDaily: number;
+  totalTargetPages: number; // 604 pages in Madina Mushaf
+  completedPagesTotal: number;
+  startDate: string;
+  targetDays?: number;
+}
+
+export interface PrayerHistoryEntry {
+  id?: string;
+  date: string;
+  prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+  status: 'completed' | 'missed' | 'qaza' | 'excused';
+  inCongregation?: boolean;
+  prayedAt?: string;
+}
+

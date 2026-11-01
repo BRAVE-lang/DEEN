@@ -154,6 +154,46 @@ export const Tracker: React.FC = () => {
         )}
       </div>
 
+      {/* Daily Quran, Dhikr & Fasting Overview */}
+      {log && (
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="p-3 rounded-2xl bg-white dark:bg-deen-charcoal-card border border-emerald-900/10 dark:border-emerald-800/20 shadow-sm">
+            <span className="text-[10px] text-stone-400 block font-semibold uppercase">Quran</span>
+            <span className="text-sm font-bold text-deen-emerald block mt-0.5 font-mono">
+              {log.quranPages || 0} pgs
+            </span>
+            <span className="text-[9px] text-stone-400">Read today</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white dark:bg-deen-charcoal-card border border-emerald-900/10 dark:border-emerald-800/20 shadow-sm">
+            <span className="text-[10px] text-stone-400 block font-semibold uppercase">Dhikr</span>
+            <span className="text-sm font-bold text-amber-500 block mt-0.5 font-mono">
+              {log.dhikrCount || 0}
+            </span>
+            <span className="text-[9px] text-stone-400">Beads counted</span>
+          </div>
+
+          <button
+            onClick={async () => {
+              const updated = { ...log, fasted: !log.fasted };
+              setLog(updated);
+              await saveDailyDeenLog(updated);
+            }}
+            className={`p-3 rounded-2xl border transition-all text-center shadow-sm ${
+              log.fasted
+                ? 'bg-deen-emerald/10 border-deen-emerald text-deen-emerald'
+                : 'bg-white dark:bg-deen-charcoal-card border-emerald-900/10 dark:border-emerald-800/20 text-stone-600 dark:text-stone-300'
+            }`}
+          >
+            <span className="text-[10px] text-stone-400 block font-semibold uppercase">Sawm</span>
+            <span className="text-xs font-bold block mt-0.5">
+              {log.fasted ? 'Fasting' : 'Not Fasting'}
+            </span>
+            <span className="text-[9px] text-stone-400">Tap to toggle</span>
+          </button>
+        </div>
+      )}
+
       {/* Sunnah Worship & Habits */}
       <div className="bg-white dark:bg-deen-charcoal-card p-4 rounded-2xl border border-emerald-900/10 dark:border-emerald-800/20 shadow-sm space-y-3">
         <h3 className="text-xs font-bold text-deen-forest dark:text-deen-ivory uppercase tracking-wider">
