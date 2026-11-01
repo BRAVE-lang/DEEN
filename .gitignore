@@ -36,6 +36,9 @@ dist-ssr
 # Vercel
 .vercel
 
+# Supabase temp
+supabase/.temp/
+
 # PWA workbox
 dev-dist
 sw.js

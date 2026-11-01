@@ -108,7 +108,11 @@ export async function fetchPrayerTimes(
 ): Promise<{ timings: PrayerTimesData; hijri: HijriDateInfo }> {
   try {
     const school = juristic === 'hanafi' ? 1 : 0;
-    const url = `https://api.aladhan.com/v1/timings?latitude=${coords.latitude}&longitude=${coords.longitude}&method=${methodId}&school=${school}`;
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const dateStr = `${day}-${month}-${now.getFullYear()}`;
+    const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${coords.latitude}&longitude=${coords.longitude}&method=${methodId}&school=${school}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('AlAdhan API request failed');
     const json = await res.json();

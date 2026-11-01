@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test:services": "node scripts/test-services.js",
-    "test:supabase": "node scripts/test-supabase-client.js"
+    "test:supabase": "node scripts/test-supabase-client.js",
+    "test:deployment": "node scripts/verify-live-deployment.js",
+    "test:integrations": "node scripts/test-live-integrations.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
